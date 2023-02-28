@@ -15,7 +15,7 @@
 <title>XDWorld기반 DT플랫폼</title>
 </head>
 <body>
-<div class="cesium_container" id="cesiumContainer"></div>
+<div class="xd_container" id="xdContainer"></div>
 <div class="map_wrap"><!-- css에 background: url("../img/map_view.png"); 삭제 미리보기용 배경 -->	
 	<div class="top_wrap">
 	<h1>3D DigitalTwin</h1>		
@@ -154,21 +154,22 @@
 							<ul class="underground_Facility">
 								<li>
 									<span class="color_legend" style="background: #ffff96"></span>
-									면적 측정  ON/OFF(우클릭 입력모드off)
+									거리측정 ON/OFF
 									<label class="input_switch fl_r">
-										<input type="checkbox" onchange="measureArea(this.checked)">
+										<input type="checkbox" id="distance" onchange="measureInteration(this.id, this.checked)">
 										<span class="input_slider round"></span>
 									</label>
 								</li>
-								<!--<li>
+								<li>
 									<span class="color_legend" style="background: #ffff96"></span>
-									라인 측정  ON/OFF(우클릭 입력모드off)
+									면적측정 ON/OFF
 									<label class="input_switch fl_r">
-										<input type="checkbox" onchange="measureLine(this.checked)">
+										<input type="checkbox" id="area" onchange="measureInteration(this.id, this.checked)">
 										<span class="input_slider round"></span>
 									</label>
-								</li>-->
+								</li>								
 							</ul>
+							<button class="btn_1" onclick="clearAnalysis()">측정 내용 전체 삭제</button>					
 						</div>
 					</div>
 				</div>
@@ -382,7 +383,7 @@
 			</div>
 			<div id="tab6" class="tab_content_3 js_scroll hide">					
 				<div class="sub2_container js_scroll">							
-					<h3>해양 경찰청 격자통계</h3>
+					<h3>해양 격자통계</h3>
 					<button class="btn_2" onclick="createSeriesSetter('2D')">2D</button>
 					<button class="btn_2" onclick="createSeriesSetter('3D')">3D</button>
 					<button class="btn_2" id='removeDatabtn' onclick="createSeriesSetter(false)">데이터 삭제</button>

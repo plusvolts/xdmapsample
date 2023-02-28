@@ -1,16 +1,16 @@
 var GLOBAL = {
-	pointIdx : 0, //POINT 인덱스
-	lineIdx : 0, //LINE 인덱스
-	polygonIdx : 0, //POLYGON 인덱스 
-	Analysis : null, //지도 분석기능 API객체
-	ghostSymbolmap : null, //GHOSTSYBOLMAP API객체
-	ghostSymbolLayer : null, //GHOSTSYBOL LAYER 객체
-	MOVE_PATH : null, //애니메이션
+	pointIdx : 0, 				//POINT 인덱스
+	lineIdx : 0, 				//LINE 인덱스
+	polygonIdx : 0, 			//POLYGON 인덱스 
+	Analysis : null, 			//지도 분석기능 API객체
+	ghostSymbolmap : null, 		//GHOSTSYBOLMAP API객체
+	ghostSymbolLayer : null, 	//GHOSTSYBOL LAYER 객체
+	MOVE_PATH : null, 			//애니메이션
 	CURRENT_MOVEMENT : null,
 	MOUSE_BUTTON_PRESS : false,
 	TRACE_TARGET : null,
 	RCidx : 0,
-	events: {// 이벤트 핸들러 존재 유무
+	events: {					// 이벤트 핸들러 존재 유무
 		selectobject : false,
 		selectbuilding : false,
 		selectghostsymbol : false,
@@ -59,7 +59,7 @@ function initUIEvent(){
 		}
 	};
 
-	//메뉴 클릭시 초기화
+	//메뉴 클릭시 지도 표시 내용 초기화
 	$('#right_tab_btn li').click(function(e){
 
 		var layerList = new Module.JSLayerList(true);
@@ -73,7 +73,7 @@ function initUIEvent(){
 			$('.firstmenu').click()
 	
 		}
-		if(this.innerText != '기본객체관리'){
+		if(this.innerText != '인터렉션'){
 			layerList.setVisible('POI_Layer', false);
 			layerList.setVisible('LINE_Layer', false);
 			layerList.setVisible('POLYGON_Layer', false);
@@ -123,21 +123,16 @@ function initUIEvent(){
 
 			$('#tab7 input[type=checkbox]').attr('checked', false);
 			$('#tab8 input[type=checkbox]').attr('checked', false);
-
 		}
-
 	})
 	
 	$('.tabs_4').children('li').eq(1).click(function(e){
 		Module.XDSetMouseState(1);
 		Module.map.clearInputPoint();
 	})
-	
-
-
 }
 
-// 2. 기본지도 호출 함수 
+// ##실습 1. 기본지도 호출 함수 
 function callXDWorldMap(){   
 	
 /*********************************************************
@@ -207,8 +202,8 @@ function callXDWorldMap(){
 				e.preventDefault();
 			});
 		
-			// 생성한 Canvas 엘리먼트를 cesiumContainer요소에 추가합니다.
-			document.getElementById('cesiumContainer').appendChild(canvas);
+			// 생성한 Canvas 엘리먼트를 xdContainer요소에 추가합니다.
+			document.getElementById('xdContainer').appendChild(canvas);
 		
 			return canvas;
 		})()
@@ -224,9 +219,9 @@ function initXDMap(){
   GLOBAL.ghostSymbolmap = Module.getGhostSymbolMap(); //고스트심볼맵 API 
   Module.SetResourceServerAddr("https://www.dtwincloud.com/assets/resource/");
 
-  setNavigatorVisible($('#navigator').prop("checked"));//네비게이터 유무
-  validDragSdis();//드래그 방지
-  initUIEvent();//검색 클릭 이벤트
+  setNavigatorVisible($('#navigator').prop("checked"));	//네비게이터 유무
+  validDragSdis();		//드래그 방지
+  initUIEvent();		//검색 클릭 이벤트
  
 }
 
@@ -255,25 +250,24 @@ function validDragSdis() {
 	};
 }
 
-
-/*카메라 이동합수*/
+//##실습 2. 카메라 이동합수
 function moveCamera(){
     var lon = $('#camLon').val(); //경도
     var lat = $('#camLat').val(); //위도
     var alt = $('#camAlt').val(); //높이
  
 	//Number로 형변환
-	lon *= 1; 
-	lat *= 1;
-	alt *= 1; 
+	lon = parseFloat(lon); 
+	lat = parseFloat(lat); 
+	alt = parseFloat(alt); 
 
 	let camera = Module.getViewCamera();
 	camera.setLocation(new Module.JSVector3D(lon, lat, alt));
 }
 
-/**클릭한 지점 좌표 입력 */
-function setMouseLClickEvent(val){
-	if(val){
+//##실습 3. 클릭지점 좌표 이벤트 함수
+function setMouseLClickEvent(flag){
+	if(flag){
 		Module.canvas.onmousedown = function(e){
 			var screenPosition = new Module.JSVector2D(e.x-405, e.y);
 		
@@ -293,6 +287,15 @@ function setMouseLClickEvent(val){
 }
 
 
+/**
+ * ##실습 4. vworld api를 이용한 위치검색 함수 
+ *  1) 키워드 위치 검색
+ *  2) 검색 목록 별 POINT 생성
+ *  3) 페이징 적용
+ *  4) 검색 목록 클릭시 해당 위치로 이동
+ * */
+
+
 //vworld 위치 검색 api
 function searchPlace(pageNum){
 	//검색할 키워드
@@ -303,7 +306,7 @@ function searchPlace(pageNum){
 		$('.s_paging').html('');
 		$('.s_location').html('');
 		var layerList = new Module.JSLayerList(true);
-		layerList.delLayerAtName("Search_POI");
+			layerList.delLayerAtName("Search_POI");
 		return;
 	}
 
@@ -318,7 +321,7 @@ function searchPlace(pageNum){
         , type: 'PLACE'
         , format: "json"
         , errorformat: "json"
-        , key: "79D419E6-64C6-3B88-846C-1CEB694E66BB"
+        , key: "B9ECCC18-DD44-3F46-A14B-EFFF588CF200"
     }
 
 
@@ -349,7 +352,7 @@ function searchPlace(pageNum){
 			let pageData = data.response.page;
 			let pagination = ''; 
 			let startPage = (parseInt((pageData.current-1)/10)*10)+1; //시작페이지
-			let endPage = startPage+(pageData.size-1); //끝페이지
+			let endPage = startPage+(pageData.size-1);				  //끝페이지
 
 			if(pageData.current == '1'){
 				pagination += '<li disabled>◀</li>';
@@ -382,9 +385,9 @@ function searchPlace(pageNum){
 //검색 결과 point 배치 함수
 function setSearchPOINT(x, y, i){
 	var layerList = new Module.JSLayerList(true);
-	layerList.delLayerAtName("Search_POI"); // 이전 검색 POINT 레이어 삭제
+		layerList.delLayerAtName("Search_POI"); // 이전 검색 POINT 레이어 삭제
 	var layer = layerList.createLayer("Search_POI", Module.ELT_3DPOINT); // 새 검색 POINT 레이어 생성
-	layer.setMaxDistance(50000000); //레이어 최대 가시범위
+		layer.setMaxDistance(50000000); //레이어 최대 가시범위
 	x*=1;
 	y*=1;
 
@@ -393,20 +396,22 @@ function setSearchPOINT(x, y, i){
 		img.onload = function(){
 			var canvas = document.createElement('canvas');
 			var ctx = canvas.getContext('2d');
-			ctx.drawImage(img, 0, 0);
-			GLOBAL.pointIdx++;
+				ctx.drawImage(img, 0, 0);
+				GLOBAL.pointIdx++;
 			var point = Module.createPoint('point_'+GLOBAL.pointIdx);
-			point.setPosition(new Module.JSVector3D(x, y, 10));
-			point.setImage(ctx.getImageData(0, 0, this.width, this.height).data, this.width, this.height);
-			layer.addObject(point, 0);
+				point.setPosition(new Module.JSVector3D(x, y, 10));
+				point.setImage(ctx.getImageData(0, 0, this.width, this.height).data, this.width, this.height);
+				layer.addObject(point, 0);
 		};
 		img.layer = layer;
 		img.src = '/XDdata/num/icon_list_'+(i+1)+'.png';
 		
 }
 
-
-//기본 객체 관리
+//##실습 5. 기본 객체 관리
+// 1)기본 객체 생성(포인트, 라인, 폴리곤)
+//메뉴 선택 -> 클릭 후 객체 생성 -> 마우스 지도 이동 모드로 자동변경 
+//삭제모드 -> 마우스 클릭시 객체 삭제 and 객체 전체 삭제 
 function drawInterection(num){
 	switch(num){
 		case 1 : drawPoint();
@@ -435,7 +440,10 @@ function drawPoint(){
 		
 		// POI 오브젝트를 추가 할 레이어 생성
 		var layerList = new Module.JSLayerList(true);
-		var layer = layerList.createLayer("POI_Layer", Module.ELT_3DPOINT);
+		var layer = layerList.nameAtLayer("POI_Layer") ;
+		if(layerList.nameAtLayer("POI_Layer") ==  null){ //레이어가 생성되어 있는지 체크
+			layer = layerList.createLayer("POI_Layer", Module.ELT_3DPOINT);
+		}		 
 		
 		//POI 이미지 생성
 		var img = new Image();
@@ -490,7 +498,7 @@ function drawLine(){
 			style : "XYZ", //style에 따른 배열 관계
 		}
 
-		lineObj = createNormalLine(coordinates); //line 속성
+		let lineObj = createNormalLine(coordinates); //line 속성
 
 		//라인 아이디
 		GLOBAL.lineIdx++;
@@ -528,8 +536,7 @@ function drawPolygon(){
 	Module.canvas.ondblclick = function(e){
 		var inputPoint = Module.map.getInputPoints();//입력된 좌표 리스트 반환
 		var inputPointCnt = inputPoint.count(); // 입력된 좌표의 개수 반환
-	
-		
+			
 		if(inputPoint.count() < 3){//입력된 좌표가 3개 미만일 경우 리턴
 			return;
 		}
@@ -549,23 +556,22 @@ function drawPolygon(){
 
 		// 폴리곤 색상 설정
 		var polygonStyle = new Module.JSPolygonStyle();
-		polygonStyle.setFill(true);
-		polygonStyle.setFillColor(new Module.JSColor(102, 051, 153, 0.1));
+			polygonStyle.setFill(true);
+			polygonStyle.setFillColor(new Module.JSColor(102, 051, 153, 0.1));
 		
 		// 폴리곤 아웃라인 설정
-		polygonStyle.setOutLine(true);
-		polygonStyle.setOutLineWidth(2.0);
-		polygonStyle.setOutLineColor(new Module.JSColor(100, 255, 228, 0.5));
-		
-		polygon.setStyle(polygonStyle);
+			polygonStyle.setOutLine(true);
+			polygonStyle.setOutLineWidth(2.0);
+			polygonStyle.setOutLineColor(new Module.JSColor(100, 255, 228, 0.5));
+			
+			polygon.setStyle(polygonStyle);
 		
 		// 입력한 지점(inputPoint, part)으로 폴리곤 형태 정의
 		var part = new Module.Collection();
-		part.add(inputPointCnt);
+			part.add(inputPointCnt);
 
 		var vertex = new Module.JSVec3Array();
-		for (var i=0; i<inputPointCnt; i++) {
-			
+		for (var i=0; i<inputPointCnt; i++) {			
 			// 입력한 점 위치에서 고도 5m 를 상승시킨 후 버텍스 추가
 			var point = inputPoint.get(i);
 			vertex.push(new Module.JSVector3D(point.Longitude, point.Latitude, point.Altitude+5.0));
@@ -622,7 +628,232 @@ function removeAllEntity(){
 
 }
 
-//vworld 건물 추가
+//##실습 5. 기본 객체 관리
+// 2)기본 분석기능 (거리 측정, 면적 측정)
+
+function measureInteration(val, flag) {
+	let layerList = new Module.JSLayerList(true);
+	if(layerList.nameAtLayer("MEASURE_POI")==null){					
+		let layer = layerList.createLayer("MEASURE_POI", Module.ELT_3DPOINT);
+			layer.setMaxDistance(20000.0);
+			layer.setSelectable(false);
+		Module.getOption().SetAreaMeasurePolygonDepthBuffer(false);		// WEBGL GL_DEPTH_TEST 설정
+		Module.getOption().SetDistanceMeasureLineDepthBuffer(false);	// WEBGL GL_DEPTH_TEST 설정
+	}
+	if(flag){
+		switch (val) {
+			case "distance": //거리측정
+				$('#area').prop("checked", false);
+				Module.XDSetMouseState(Module.MML_ANALYS_DISTANCE_STRAIGHT);		
+				// 콜백 함수 설정 지속적으로 사용
+				Module.getOption().callBackAddPoint(addDistancePoint);		// 마우스 입력시 발생하는 콜백 성공 시 success 반환 실패 시 실패 오류 반환
+				Module.getOption().callBackCompletePoint(endPoint);	// 측정 종료(더블클릭) 시 발생하는 콜백 성공 시 success 반환 실패 시 실패 오류 반환
+				break;
+			case "area": //면적측정
+				$('#distance').prop("checked", false);
+				Module.XDSetMouseState(Module.MML_ANALYS_AREA_PLANE);				
+				// 콜백 함수 설정 지속적으로 사용
+				Module.getOption().callBackAddPoint(addAreaPoint);		// 마우스 입력시 발생하는 콜백 성공 시 success 반환 실패 시 실패 오류 반환
+				Module.getOption().callBackCompletePoint(endPoint);	// 측정 종료(더블클릭) 시 발생하는 콜백 성공 시 success 반환 실패 시 실패 오류 반환
+				break;
+		}
+	}else{
+		Module.XDSetMouseState(Module.MML_MOVE_GRAB); //마우스 모드 1로 변경			
+	}
+}
+
+let m_mercount = 0;	// 측정 오브젝트 갯수
+let m_objcount = 0;	// 측정 오브젝트를 표시하는 POI 갯수
+
+/* callBackAddPoint에 지정된 함수 [마우스 왼쪽 클릭 시 이벤트 발생]*/
+function addAreaPoint(e) {
+	// e 구성요소
+	// dLon, dLat, dAlt : 면적 중심 좌표(경위 고도)
+	// dArea			: 면적 크기	
+	createPOI(new Module.JSVector3D(e.dLon, e.dLat, e.dAlt), "rgba(255, 204, 198, 0.8)", e.dArea, true);
+}
+
+/* callBackAddPoint에 지정된 함수 [마우스 왼쪽 클릭 시 이벤트 발생]*/
+function addDistancePoint(e) {
+	// e 구성요소
+	// dMidLon, dMidLat, dMidAlt : 이전 입력 된 지점과 현재 지점을 중점(경위 고도)
+	// dLon, dLat, dAlt : 현재 입력 된 지점(경위 고도)
+	// dDistance		: 현재 점과 이전 점과의 길이
+	// dTotalDistance	: 모든 점과의 길이
+	
+	let partDistance = e.dDistance,
+		totalDistance = e.dTotalDistance;
+
+	if (partDistance == 0 && totalDistance == 0) {
+		m_objcount = 0;	// POI 갯수 초기화
+		createPOI(new Module.JSVector3D(e.dLon, e.dLat, e.dAlt), "rgba(255, 204, 198, 0.8)", "Start", true);
+	} else {
+		if (e.dDistance > 0.01) {
+			createPOI(new Module.JSVector3D(e.dMidLon, e.dMidLat, e.dMidAlt), "rgba(255, 255, 0, 0.8)", e.dDistance, false);
+		}
+		createPOI(new Module.JSVector3D(e.dLon, e.dLat, e.dAlt), "rgba(255, 204, 198, 0.8)", e.dTotalDistance, true);
+	}
+}
+
+/* callBackCompletePoint에 지정된 함수 [마우스 더블 클릭 시 이벤트 발생]*/
+function endPoint(e) {	
+	m_mercount++;
+}
+
+//=============================================== POI 생성 과정
+/* 정보 표시 POI */
+function createPOI(_position, _color, _value, _balloonType) {
+	// 매개 변수
+	// _position : POI 생성 위치
+	// _color : drawIcon 구성 색상
+	// _value : drawIcon 표시 되는 텍스트
+	// _balloonType : drawIcon 표시 되는 모서리 옵션(true : 각진 모서리, false : 둥근 모서리)
+
+	// POI 아이콘 이미지를 그릴 Canvas 생성
+	var drawCanvas = document.createElement('canvas');
+	// 캔버스 사이즈(이미지 사이즈)
+	drawCanvas.width = 100;
+	drawCanvas.height = 100;
+
+	// 아이콘 이미지 데이터 반환
+	let imageData = drawIcon(drawCanvas, _color, _value, _balloonType);
+
+	let Symbol = Module.getSymbol();
+
+	let layerList = new Module.JSLayerList(true);
+	let layer = layerList.nameAtLayer("MEASURE_POI");
+
+	// POI가 존재 하면 삭제 후 생성
+	let key = m_mercount + "_POI";
+	layer.removeAtKey(key);
+	
+	// POI 생성 과정
+	if(_balloonType){ //전체 결과 말풍선
+		poi = Module.createPoint(m_mercount + "_POI");				
+	}else{ 			  //거리 측정 지점간 거리 말풍선
+		poi = Module.createPoint(m_mercount + "_POI" + m_objcount);		
+		m_objcount++;
+	}
+
+	poi.setPosition(_position);												// 위치 설정
+	poi.setImage(imageData, drawCanvas.width, drawCanvas.height);			// 아이콘 설정
+	layer.addObject(poi, 0);												// POI 레이어 등록
+	
+}
+
+/* 아이콘 이미지 데이터 반환 */
+function drawIcon(_canvas, _color, _value, _balloonType) {
+
+	// 컨텍스트 반환 및 배경 초기화
+	var ctx = _canvas.getContext('2d'),
+		width = _canvas.width,
+		height = _canvas.height
+		;
+	ctx.clearRect(0, 0, width, height);
+
+	// 배경 Draw Path 설정 후 텍스트 그리기
+	if (_balloonType) {
+		drawBalloon(ctx, height * 0.5, width, height, 5, height * 0.25, _color);
+		setText(ctx, width * 0.5, height * 0.2, _value);
+	} else {
+		drawRoundRect(ctx, 0, height * 0.3, width, height * 0.25, 5, _color);
+		setText(ctx, width * 0.5, height * 0.5, _value);
+	}
+
+	return ctx.getImageData(0, 0, _canvas.width, _canvas.height).data;
+}
+
+/* 말풍선 배경 그리기 */
+function drawBalloon(ctx,
+	marginBottom, width, height,
+	barWidth, barHeight,
+	color) {
+
+	var wCenter = width * 0.5,
+		hCenter = height * 0.5;
+
+	// 말풍선 형태의 Draw Path 설정
+	ctx.beginPath();
+	ctx.moveTo(0, 0);
+	ctx.lineTo(0, height - barHeight - marginBottom);
+	ctx.lineTo(wCenter - barWidth, height - barHeight - marginBottom);
+	ctx.lineTo(wCenter, height - marginBottom);
+	ctx.lineTo(wCenter + barWidth, height - barHeight - marginBottom);
+	ctx.lineTo(width, height - barHeight - marginBottom);
+	ctx.lineTo(width, 0);
+	ctx.closePath();
+
+	// 말풍선 그리기
+	ctx.fillStyle = color;
+	ctx.fill();
+}
+
+/* 둥근 사각형 배경 그리기 */
+function drawRoundRect(ctx,
+	x, y,
+	width, height, radius,
+	color) {
+
+	if (width < 2 * radius) radius = width * 0.5;
+	if (height < 2 * radius) radius = height * 0.5;
+
+	ctx.beginPath();
+	ctx.moveTo(x + radius, y);
+	ctx.arcTo(x + width, y, x + width, y + height, radius);
+	ctx.arcTo(x + width, y + height, x, y + height, radius);
+	ctx.arcTo(x, y + height, x, y, radius);
+	ctx.arcTo(x, y, x + width, y, radius);
+	ctx.closePath();
+
+	// 사각형 그리기
+	ctx.fillStyle = color;
+	ctx.fill();
+
+	return ctx;
+}
+
+/* 텍스트 그리기 */
+function setText(_ctx, _posX, _posY, _value) {
+
+	var strText = "";
+
+	// 텍스트 문자열 설정
+	var strText = setTextComma(_value.toFixed(2)) + '㎡';
+
+	// 텍스트 스타일 설정
+	_ctx.font = "bold 16px sans-serif";
+	_ctx.textAlign = "center";
+	_ctx.fillStyle = "rgb(0, 0, 0)";
+
+	// 텍스트 그리기
+	_ctx.fillText(strText, _posX, _posY);
+}
+
+/* 단위 표현 */
+function setTextComma(str) {
+	str = String(str);
+	return str.replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
+}
+
+/* 분석 내용 초기화 */
+function clearAnalysis() {
+
+	// 실행 중인 분석 내용 초기화
+	Module.XDClearAreaMeasurement();
+	Module.XDClearDistanceMeasurement();
+
+	m_mercount = 0;
+	m_objcount = 0;
+	// 레이어 삭제
+	let layerList = new Module.JSLayerList(true);
+	let layer = layerList.nameAtLayer("MEASURE_POI");
+	layer.removeAll();
+		
+}
+
+//##실습 6. 모델객체 관리 
+// 1) vworld 건물 관리 
+// 텍스쳐 모드 -> vworld 건물 기본 텍스쳐 or 심플모드 
 function addVWorldBuilding(val){
 	Module.XDSetMouseState(1); // 마우스 지도 이동 모드
 
@@ -685,30 +916,32 @@ function setBuildingTexture(val){
 	}
 }
 
-//모델객체 관리
+//##실습 6. 모델객체 관리
+// 2) 파일객체 추가 (고스트심볼 객체를 이용한 3D 모델)
+//	3D파일 -> XDdata폴더 
+//	객체 추가 시, 해당 위치로 이동
 function addModelEntity(val, mName, height){
 	
 	var layerlist = new Module.JSLayerList(true);
 	//고스트심볼 레이어 생성
-	GLOBAL.ghostSymbolLayer = layerlist.createLayer('GHOST_SYMBOL_LAYER',Module.ELT_GHOST_3DSYMBOL);
-
-	//고스트심볼맵 객체 반환
-	GLOBAL.ghostSymbolMap = Module.getGhostSymbolMap();
-
-	
+	if(GLOBAL.ghostSymbolLayer == null){ //레이어가 없을때 생성
+		GLOBAL.ghostSymbolLayer = layerlist.createLayer('GHOST_SYMBOL_LAYER',Module.ELT_GHOST_3DSYMBOL);
+		GLOBAL.ghostSymbolMap = Module.getGhostSymbolMap(); //고스트심볼맵 객체 반환
+	}
 	
 	if(!val){
 		//해당 key의 고스트심볼 object 숨김
 		GLOBAL.ghostSymbolLayer.keyAtObject(mName).setVisible(false);
-		 if(mName == 'Airship'){stopCarAnimation();}
+		if(mName == 'Airship'){stopCarAnimation();}
 		return;
 	}
 	
 	stopCarAnimation();//애니메이션 종료
-	var camera = Module.getViewCamera();
-	//카메라 이동
-	camera.setLocation(new Module.JSVector3D(127.099136, 37.499130, 1000));
-	camera.setTilt(90);
+	
+	//모델 위치로 카메라 이동
+	var camera = Module.getViewCamera();		
+		camera.setLocation(new Module.JSVector3D(127.099136, 37.499130, 1000));
+		camera.setTilt(90);
 	
 	//고스트심볼맵에 이미 존재하는 모델데이터일 경우, 
 	var g = Module.getGhostSymbolMap().isExistID(mName);
@@ -839,7 +1072,11 @@ let mouseWheelE = function(e){
 } 
 
 
-//객체이동 이벤트  > 애니메이션 시작
+/**## 실습7. 객체이동&이벤트
+ * 1)애니메이션 설정 
+ * - 비행선 3D 모델 객체 생성
+ * - 참고 사이트 -> http://sandbox.dtwincloud.com/code/main.do?id=camera_trace_path_moving
+*/
 function playCarAnimation(){
 
 	//비행선 오브젝트가 존재하지 않을 경우 취소 
@@ -948,7 +1185,10 @@ function createPath(_pathPoint) {
 
 
 
-//마우스로 객체 추가&삭제
+/**## 실습7. 객체이동&이벤트
+ * 2) 마우스로 객체 추가 & 삭제
+ * - 마우스 클릭 시 3D 모델 객체 추가& 삭제  
+*/
 function setMouseRClickEvent(val, id){
 	
 	$('#'+(id == 'RCL_DELETE'?'RCL_MAKE': 'RCL_DELETE')).attr('checked', false);
@@ -1032,7 +1272,11 @@ function setMouseRClickEvent(val, id){
 	}
 }
 
-//wms 레이어 추가 및 숨김
+/**## 실습 8. 레이어 추가
+ * 1) wms 레이어 추가 
+ * 	- vworld wms api 이용 
+ *  - 프록시 설정(app.js 파일 참고)
+ */
 function addWmsLayer(val, layerName){
 	
 	let layerList = new Module.JSLayerList(false);		
@@ -1054,7 +1298,7 @@ function addWmsLayer(val, layerName){
 		maximumlevel: 15,
 		crs:'EPSG:4326',
 		parameters:  {
-			key : 'F1D04FBB-DBB3-3F07-9B45-2FA496499F9B', //api key
+			key : 'B9ECCC18-DD44-3F46-A14B-EFFF588CF200', //api key
 			request : 'GetMap',
 			styles : (layerName == 'lt_c_upisuq161'?layerName:layerName+'_3d'),
 			version : '1.3.0',                            //wms version
@@ -1072,7 +1316,11 @@ function addWmsLayer(val, layerName){
 	
 }
 
-//wfs레이어 추가 및 삭제
+/**## 실습 8. 레이어 추가
+ * 1) wfs 레이어 추가 
+ * 	- vworld wfs api 이용 
+ *  - 프록시 설정(app.js 파일 참고)
+ */
 function addWfsLayer(val, layerName){
 
 	if(layerName == 'lt_c_wkmstrm'){layerName = 'lt_c_ud801'};
@@ -1084,7 +1332,7 @@ function addWfsLayer(val, layerName){
 			version : '1.1.0',
 			maxFeatures : 50,
 			output : 'application/json',
-			key : 'F1D04FBB-DBB3-3F07-9B45-2FA496499F9B',
+			key : 'B9ECCC18-DD44-3F46-A14B-EFFF588CF200',
 			DOMAIN : 'localhost:8080',
 			crs : 'EPSG:4326',
 			srsname : 'EPSG:4326',
@@ -1184,7 +1432,9 @@ function createWFSPoint(data, layer){
 	})
 }
 
-//현실 시뮬레이션 > vworld 건물 추가
+/**## 실습 9. 현실 시뮬레이션 
+ * 1) 그림자 시뮬레이션 
+*/
 function addShadowBuilding(val){
 	Module.XDSetMouseState(1);//지도 이동 모드
 	if(val){
@@ -1211,7 +1461,10 @@ function stopShadowSimulation(){
 	GLOBAL.Analysis.setShadowSimulation(false);//그림자 시뮬레이션 종료
 }
 
-//눈효과 적용
+/**## 실습 9. 현실 시뮬레이션 
+ * 1) 날씨 시뮬레이션- 눈효과 적용 
+ * 눈 이미지 -> XDdata
+*/
 function playSnowEffect(){
 	Module.map.stopWeather();//기상효과 종료
 	Module.map.clearSnowfallArea();//적설효과 초기화
@@ -1223,7 +1476,10 @@ function playSnowEffect(){
 	Module.map.startWeather(0, 1, 1);//기상효과 재활성화
 }
 
-//비효과 적용
+/**## 실습 9. 현실 시뮬레이션 
+ * 2) 날씨 시뮬레이션 - 비효과 적용 
+ * 비 이미지 -> XDdata
+*/
 function playRainEffect(){
 	Module.map.stopWeather();//기상효과 종료
 	Module.map.clearSnowfallArea();//적설효과 초기화
@@ -1235,7 +1491,9 @@ function playRainEffect(){
 
 }
 
-// 하늘 밝기
+/**## 실습 9. 현실 시뮬레이션 
+ * 3) 날씨 시뮬레이션 - 하늘 밝기
+*/
 function setSkyBright(val){
 	Module.map.stopWeather();//기상효과 종료
 	Module.map.clearSnowfallArea();//적설효과 초기화
@@ -1249,7 +1507,9 @@ function setSkyBright(val){
 
 }
 
-//안개 가시범위
+/**## 실습 9. 현실 시뮬레이션 
+ * 4) 날씨 시뮬레이션 - 안개
+*/
 function setFogDensity(val){
 	Module.map.stopWeather();//기상효과 종료
 	Module.map.clearSnowfallArea();//적설효과 초기화
@@ -1266,7 +1526,9 @@ function setFogDensity(val){
 
 }
 
-//기상효과 제거
+/**## 실습 9. 현실 시뮬레이션 
+ * 5) 날씨 시뮬레이션 - 기상효과 제거 
+*/
 function removeWeatherEntity(){
 	Module.map.stopWeather();//기상효과 종료
 	Module.map.clearSnowfallArea();//적설효과 초기화
@@ -1275,20 +1537,23 @@ function removeWeatherEntity(){
 
 }
 
-//통계표현
+
+/**실습 10. 통계 표현
+ * - 해양 데이터 -> XDdata > data.json
+ * - GRID 통계 표현 (2D, 3D)
+ */
 function createSeriesSetter(type){
 	
-	var layerList = new Module.JSLayerList(true);
-	
-	layerList.setVisible('LAYER_GRID_2D', false);//2D 레이어 숨김
-	layerList.setVisible('LAYER_GRID_3D', false);//3D 레이어 숨김
+	var layerList = new Module.JSLayerList(true);	
+		layerList.setVisible('LAYER_GRID_2D', false);//2D 레이어 숨김
+		layerList.setVisible('LAYER_GRID_3D', false);//3D 레이어 숨김
 	var layer;
 	
 	if(!type){return;}
 
 	let camera = Module.getViewCamera();
-	camera.setLocation(new Module.JSVector3D(127.037288, 36.014688, 1000000));
-	camera.move(new Module.JSVector3D(127.037288, 36.014688, 1000000), 90, 0, 1);
+		camera.setLocation(new Module.JSVector3D(127.037288, 36.014688, 1000000));
+		camera.move(new Module.JSVector3D(127.037288, 36.014688, 1000000), 90, 0, 1);
 	
 	//기존 레이어가 있다면 가시화, 없다면 생성
 	if(layerList.nameAtLayer('LAYER_GRID_'+type) != null){
@@ -1435,7 +1700,10 @@ function createGrid_3D(_data){
 	return grid;
 }
 
-//시곡권분석 > vworld 건물 추가
+
+/**실습 11. 분석기능
+ * - 1) 시곡면 분석 
+ */
 function addAnalysisBuilding(val){
 	Module.XDSetMouseState(1);//지도 이동 모드
 	if(val){
@@ -1447,9 +1715,6 @@ function addAnalysisBuilding(val){
 		Module.XDEMapRemoveLayer("facility_build");//vworld 건물 레이어 삭제
 	}
 }
-
-
-
 
 function setMouseAnlaysis(val){
 	
@@ -1496,7 +1761,9 @@ function viewFireE(e){
 	Module.map.MapRender();		// 화면 랜더링 갱신
 }
 
-//가시권 마우스 선택
+/**실습 11. 분석기능
+ * - 2) 가시권 분석
+ */
 function setViewshadeMode(val){
 	Module.XDSetMouseState(1);
 	Module.map.clearInputPoint();
@@ -1553,167 +1820,7 @@ function setViewOption(val, id){
 			break;
 	}
 }
-let m_mercount = 0;	// 측정 오브젝트 갯수
 
-function measureArea(val){
-	if(val){
-		Module.getOption().SetAreaMeasurePolygonDepthBuffer(false);
-		// 콜백 함수 설정 지속적으로 사용
-		Module.getOption().callBackAddPoint(addPoint);		// 마우스 입력시 발생하는 콜백 성공 시 success 반환 실패 시 실패 오류 반환
-		Module.getOption().callBackCompletePoint(endPoint);	// 측정 종료(더블클릭) 시 발생하는 콜백 성공 시 success 반환 실패 시 실패 오류 반환
-
-		// 면적 측정 마우스 모드 변경
-		Module.XDSetMouseState(Module.MML_ANALYS_AREA_PLANE);
-
-
-	}
-}
-
-/* callBackAddPoint에 지정된 함수 [마우스 왼쪽 클릭 시 이벤트 발생]*/
-function addPoint(e) {
-	// e 구성요소
-	// dLon, dLat, dAlt : 면적 중심 좌표(경위 고도)
-	// dArea			: 면적 크기	
-	createPOI(new Module.JSVector3D(e.dLon, e.dLat, e.dAlt), "rgba(255, 204, 198, 0.8)", e.dArea, true);
-}
-
-/* callBackCompletePoint에 지정된 함수 [마우스 더블 클릭 시 이벤트 발생]*/
-function endPoint(e) {
-	m_mercount++;
-}
-
-//=============================================== POI 생성 과정
-/* 정보 표시 POI */
-function createPOI(_position, _color, _value, _balloonType) {
-	// 매개 변수
-	// _position : POI 생성 위치
-	// _color : drawIcon 구성 색상
-	// _value : drawIcon 표시 되는 텍스트
-	// _balloonType : drawIcon 표시 되는 모서리 옵션(true : 각진 모서리, false : 둥근 모서리)
-
-	// POI 아이콘 이미지를 그릴 Canvas 생성
-	var drawCanvas = document.createElement('canvas');
-	// 캔버스 사이즈(이미지 사이즈)
-	drawCanvas.width = 100;
-	drawCanvas.height = 100;
-
-	// 아이콘 이미지 데이터 반환
-	let imageData = drawIcon(drawCanvas, _color, _value, _balloonType);
-
-	let Symbol = Module.getSymbol();
-
-	let layerList = new Module.JSLayerList(true);
-	let layer = layerList.nameAtLayer("MEASURE_POI");
-	if(layer == null){
-		layerList.createLayer("MEASURE_POI", Module.ELT_3DPOINT)
-		layer.setMaxDistance(20000.0);
-		layer.setSelectable(false);
-	}
-
-	// POI가 존재 하면 삭제 후 생성
-	let key = m_mercount + "_POI";
-	layer.removeAtKey(key);
-	
-	// POI 생성 과정
-	poi = Module.createPoint(m_mercount + "_POI");
-	poi.setPosition(_position);												// 위치 설정
-	poi.setImage(imageData, drawCanvas.width, drawCanvas.height);			// 아이콘 설정
-	layer.addObject(poi, 0);												// POI 레이어 등록
-}
-
-/* 아이콘 이미지 데이터 반환 */
-function drawIcon(_canvas, _color, _value, _balloonType) {
-
-	// 컨텍스트 반환 및 배경 초기화
-	var ctx = _canvas.getContext('2d'),
-		width = _canvas.width,
-		height = _canvas.height
-		;
-	ctx.clearRect(0, 0, width, height);
-
-	// 배경 Draw Path 설정 후 텍스트 그리기
-	if (_balloonType) {
-		drawBalloon(ctx, height * 0.5, width, height, 5, height * 0.25, _color);
-		setText(ctx, width * 0.5, height * 0.2, _value);
-	} else {
-		drawRoundRect(ctx, 0, height * 0.3, width, height * 0.25, 5, _color);
-		setText(ctx, width * 0.5, height * 0.5, _value);
-	}
-
-	return ctx.getImageData(0, 0, _canvas.width, _canvas.height).data;
-}
-
-/* 말풍선 배경 그리기 */
-function drawBalloon(ctx,
-	marginBottom, width, height,
-	barWidth, barHeight,
-	color) {
-
-	var wCenter = width * 0.5,
-		hCenter = height * 0.5;
-
-	// 말풍선 형태의 Draw Path 설정
-	ctx.beginPath();
-	ctx.moveTo(0, 0);
-	ctx.lineTo(0, height - barHeight - marginBottom);
-	ctx.lineTo(wCenter - barWidth, height - barHeight - marginBottom);
-	ctx.lineTo(wCenter, height - marginBottom);
-	ctx.lineTo(wCenter + barWidth, height - barHeight - marginBottom);
-	ctx.lineTo(width, height - barHeight - marginBottom);
-	ctx.lineTo(width, 0);
-	ctx.closePath();
-
-	// 말풍선 그리기
-	ctx.fillStyle = color;
-	ctx.fill();
-}
-
-/* 둥근 사각형 배경 그리기 */
-function drawRoundRect(ctx,
-	x, y,
-	width, height, radius,
-	color) {
-
-	if (width < 2 * radius) radius = width * 0.5;
-	if (height < 2 * radius) radius = height * 0.5;
-
-	ctx.beginPath();
-	ctx.moveTo(x + radius, y);
-	ctx.arcTo(x + width, y, x + width, y + height, radius);
-	ctx.arcTo(x + width, y + height, x, y + height, radius);
-	ctx.arcTo(x, y + height, x, y, radius);
-	ctx.arcTo(x, y, x + width, y, radius);
-	ctx.closePath();
-
-	// 사각형 그리기
-	ctx.fillStyle = color;
-	ctx.fill();
-
-	return ctx;
-}
-
-/* 텍스트 그리기 */
-function setText(_ctx, _posX, _posY, _value) {
-
-	var strText = "";
-
-	// 텍스트 문자열 설정
-	var strText = setTextComma(_value.toFixed(2)) + '㎡';
-
-	// 텍스트 스타일 설정
-	_ctx.font = "bold 16px sans-serif";
-	_ctx.textAlign = "center";
-	_ctx.fillStyle = "rgb(0, 0, 0)";
-
-	// 텍스트 그리기
-	_ctx.fillText(strText, _posX, _posY);
-}
-
-/* 단위 표현 */
-function setTextComma(str) {
-	str = String(str);
-	return str.replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1,');
-}
 
 
 
