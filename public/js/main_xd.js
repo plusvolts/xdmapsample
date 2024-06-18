@@ -567,7 +567,7 @@ function drawPolygon(){
 		// 폴리곤 색상 설정
 		var polygonStyle = new Module.JSPolygonStyle();
 			polygonStyle.setFill(true);
-			polygonStyle.setFillColor(new Module.JSColor(102, 051, 153, 0.1));
+			polygonStyle.setFillColor(new Module.JSColor(102, 51, 153, 0.1));
 		
 		// 폴리곤 아웃라인 설정
 			polygonStyle.setOutLine(true);
@@ -1476,7 +1476,7 @@ function addShadowBuilding(val){
 
 //그림자 시뮬레이션 시작
 function startShadowSimulation(){
-	GLOBAL.Analysis.setShadowSimulTime(2022, 10, 5, 9, 00, 18, 00);//그림자 시뮬레이션 날짜(년도, 월, 일), 시작 시각(시간, 분), 종료 시각(시간, 분)을 설정
+	GLOBAL.Analysis.setShadowSimulTime(2022, 10, 5, 9, 0, 18, 0);//그림자 시뮬레이션 날짜(년도, 월, 일), 시작 시각(시간, 분), 종료 시각(시간, 분)을 설정
 	GLOBAL.Analysis.setShadowSimulation(true);//그림자 시뮬레이션 실행
 
 }
