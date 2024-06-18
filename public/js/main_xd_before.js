@@ -14,7 +14,8 @@ var GLOBAL = {
 		selectobject : false,
 		selectbuilding : false,
 		selectghostsymbol : false,
-	}
+	},
+	VWORLD_API_KEY : 'C8E0F10C-BA8F-31A9-B389-CB316119B6D6'//#실습 브이월드 API 키 입력 필요 //localhost기준으로 발급 필요
 };
 var Module;
 

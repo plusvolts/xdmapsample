@@ -14,7 +14,8 @@ var GLOBAL = {
 		selectobject : false,
 		selectbuilding : false,
 		selectghostsymbol : false,
-	}
+	},	
+	VWORLD_API_KEY : 'C8E0F10C-BA8F-31A9-B389-CB316119B6D6'//#실습 브이월드 API 키 입력 필요 //localhost기준으로 발급 필요
 };
 var Module;
 
@@ -187,38 +188,40 @@ function callXDWorldMap(){
 
 	Module = {
 		TOTAL_MEMORY: 256*1024*1024,
-		postRun: [initXDMap],
-		canvas: (function() {
-			// Canvas 엘리먼트 생성
-			var canvas = document.createElement('canvas');
-		
-			// Canvas id, Width, height 설정
-			canvas.id = "canvas";
-		
-			canvas.width= window.innerWidth-405;
-			canvas.height=window.innerHeight;	
-		
-			canvas.addEventListener("contextmenu", function(e){
-				e.preventDefault();
-			});
-		
-			// 생성한 Canvas 엘리먼트를 xdContainer요소에 추가합니다.
-			document.getElementById('xdContainer').appendChild(canvas);
-		
-			return canvas;
-		})()
+		postRun: [initXDMap]		
 	}; 
 
 }
 
 /* 엔진 로드 후 실행할 초기화 함수(Module.postRun) */
 function initXDMap(){
-  Module.Start(window.innerWidth-405, window.innerHeight);
+ // 엔진 초기화 API 호출(필수)
+ Module.initialize({
+	container: document.getElementById("xdContainer"),
+	terrain : {
+		dem : {
+			url : "https://xdworld.vworld.kr",
+			name : "dem",
+			servername : "XDServer3d",
+			encoding : true
+		},
+		image : {
+			url : "https://xdworld.vworld.kr",
+			name : "tile_mo_HD",
+			servername : "XDServer3d"
+		},
+	},
+	defaultKey : "ezbBD(h2eFCmDQFQd9QpdzDS#zJRdJDm4!Epe(a2EzcbEzb2"
+  });
+  Module.SetResourceServerAddr("/img/");
+  //지도 사이즈 맞추기
+  Module.Resize(window.innerWidth-405, window.innerHeight);
+  Module.XDRenderData();
+
   Module.map = Module.getMap();
   GLOBAL.Analysis = Module.getAnalysis();//지도 내 분석기능 설정 API
   GLOBAL.ghostSymbolmap = Module.getGhostSymbolMap(); //고스트심볼맵 API 
-  Module.SetResourceServerAddr("https://www.dtwincloud.com/assets/resource/");
-
+  
   setNavigatorVisible($('#navigator').prop("checked"));	//네비게이터 유무
   validDragSdis();		//드래그 방지
   initUIEvent();		//검색 클릭 이벤트
@@ -298,16 +301,24 @@ function setMouseLClickEvent(flag){
 
 //vworld 위치 검색 api
 function searchPlace(pageNum){
-	//검색할 키워드
-	var keyword = $('#searchKeyword').val();
-
+	
+	var keyword = $('#searchKeyword').val();	//검색할 키워드
+	var layerList = new Module.JSLayerList(true);
+	var layer = "";
 	if(keyword.trim().length == 0){
 		$('#tab2 h2').html("");
 		$('.s_paging').html('');
-		$('.s_location').html('');
-		var layerList = new Module.JSLayerList(true);
-			layerList.delLayerAtName("Search_POI");
+		$('.s_location').html('');	
+		layerList.delLayerAtName("Search_POI"); //검색어에 아무것도 없을때 POI삭제
 		return;
+	}else{
+		if(layerList.nameAtLayer("Search_POI") == null){ //레이어 생성되었는지 체크
+			layer = layerList.createLayer("Search_POI", Module.ELT_3DPOINT); // 새 검색 POINT 레이어 생성
+			layer.setMaxDistance(500000); //레이어 최대 가시범위
+		}else{
+			layer = layerList.nameAtLayer("Search_POI");
+			layer.removeAll(); //기존 검색 아이콘 모두 삭제
+		}
 	}
 
 	var params = {
@@ -321,7 +332,8 @@ function searchPlace(pageNum){
         , type: 'PLACE'
         , format: "json"
         , errorformat: "json"
-        , key: "B9ECCC18-DD44-3F46-A14B-EFFF588CF200"
+		
+        , key: GLOBAL.VWORLD_API_KEY
     }
 
 
@@ -335,16 +347,16 @@ function searchPlace(pageNum){
 			$('#tab2 h2').html("<span>"+keyword+"</span> 검색결과입니다.");
 			let result = '';
 			for(let i = 0; i<data.response.record.current; i++){
-			
-				result += '<li class="title active" data-pointx='+data.response.result.items[i].point.x+' data-pointy='+data.response.result.items[i].point.y+'><ul>';
-				result += '<li>'+data.response.result.items[i].title+'</li>';
-				result += '<li>'+data.response.result.items[i].address.parcel+'</li>';
-				result += '<li class="addr">'+data.response.result.items[i].address.road+"</li>";
-				result += '<li class="phone">'+data.response.result.items[i].id+'<span> | '+data.response.result.items[i].category+'</span></li></ul></li>';
+				let thisItem = data.response.result.items[i];
+				result += '<li class="title active" data-pointx='+thisItem.point.x+' data-pointy='+thisItem.point.y+'><ul>'; 
+				result += '<li>'+thisItem.title+'</li>';						//명칭
+				result += '<li>'+thisItem.address.parcel+'</li>';				//지번주소
+				result += '<li class="addr">'+thisItem.address.road+"</li>";    //도로명주소
+				result += '<li class="phone">'+thisItem.id+'<span> | '+thisItem.category+'</span></li></ul></li>';
 
 				$('.s_location').html(result);
 				//검색 결과 point 배치
-				setSearchPOINT(data.response.result.items[i].point.x, data.response.result.items[i].point.y, i);
+				setSearchPOINT(thisItem.point.x, thisItem.point.y, i, layer, thisItem.title);
 
 			}
 
@@ -383,13 +395,10 @@ function searchPlace(pageNum){
 }
 
 //검색 결과 point 배치 함수
-function setSearchPOINT(x, y, i){
-	var layerList = new Module.JSLayerList(true);
-		layerList.delLayerAtName("Search_POI"); // 이전 검색 POINT 레이어 삭제
-	var layer = layerList.createLayer("Search_POI", Module.ELT_3DPOINT); // 새 검색 POINT 레이어 생성
-		layer.setMaxDistance(50000000); //레이어 최대 가시범위
-	x*=1;
-	y*=1;
+function setSearchPOINT(x, y, i, _layer, _titleNm){
+
+	x = parseFloat(x); //숫자 형변환 //에러방지
+	y = parseFloat(y);
 
 	//POI 이미지 생성
 	var img = new Image();
@@ -398,12 +407,13 @@ function setSearchPOINT(x, y, i){
 			var ctx = canvas.getContext('2d');
 				ctx.drawImage(img, 0, 0);
 				GLOBAL.pointIdx++;
-			var point = Module.createPoint('point_'+GLOBAL.pointIdx);
-				point.setPosition(new Module.JSVector3D(x, y, 10));
-				point.setImage(ctx.getImageData(0, 0, this.width, this.height).data, this.width, this.height);
-				layer.addObject(point, 0);
+			var point = Module.createPoint('point_'+GLOBAL.pointIdx);	//포인트 객체 생성
+				point.setPosition(new Module.JSVector3D(x, y, 10));		//포인트 객제 위치
+				point.setImage(ctx.getImageData(0, 0, this.width, this.height).data, this.width, this.height); //포인트 이미지
+				point.setText(_titleNm);	//포인트 텍스트
+				this.layer.addObject(point, 0);  //포인트 객체 레이어에 추가
 		};
-		img.layer = layer;
+		img.layer = _layer;
 		img.src = '/XDdata/num/icon_list_'+(i+1)+'.png';
 		
 }
@@ -859,8 +869,15 @@ function addVWorldBuilding(val){
 
 	if(val){
 		//vworld 건물 레이어 추가 
-		Module.XDEMapCreateLayer("facility_build", "https://xdworld.vworld.kr", 0, true, true, false, 9, 0, 15);
-		Module.setVisibleRange("facility_build", 3.0, 100000.0);
+		// Add building layer
+		var layer = Module.getTileLayerList().createXDServerLayer({
+			url : "https://xdworld.vworld.kr",
+			servername : "XDServer3d",
+			name : "facility_build",
+			type : 9,
+			minLevel : 0,
+			maxLevel : 15
+		});
 		//심플모드
 		Module.map.setSimpleMode(true);
 
@@ -1191,12 +1208,12 @@ function createPath(_pathPoint) {
 */
 function setMouseRClickEvent(val, id){
 	
-	$('#'+(id == 'RCL_DELETE'?'RCL_MAKE': 'RCL_DELETE')).attr('checked', false);
+	$('#'+(id == 'RCL_DELETE'?'RCL_MAKE': 'RCL_DELETE')).attr('checked', false); //삭제와 추가가 동시에 켜지는것 방지
 	
 	Module.canvas.onmousedown = 'return false;'
 	Module.canvas.onmousemove ='return false;'
 	Module.canvas.onmouseup = 'return false;'
-	if(!val){
+	if(!val){ //off일때 마우스 이동모드
 		Module.XDSetMouseState(1);//지도 이동 모드
 		return;
 	}
@@ -1245,7 +1262,7 @@ function setMouseRClickEvent(val, id){
 			GLOBAL.ghostSymbolLayer = layer;
 			GLOBAL.ghostSymbolMap = Module.getGhostSymbolMap();
 			
-			let url3D = '/XDdata/church3D.xdo';//3d파일 경로
+			let url3D = '/XDdata/building_1.3ds';//3d파일 경로
 			let position=[Number(lon), Number(lat), alt];//위치 
 			let RCid = 'RClickObj_'+GLOBAL.RCidx++;//오브젝트 id 
 
@@ -1257,7 +1274,7 @@ function setMouseRClickEvent(val, id){
 					Module.getGhostSymbolMap().setModelTexture({
 						id : e.id,
 						face_index : 0,
-						url : '/XDdata/church3D.jpg',
+						url : '/XDdata/building_1.jpg',
 						callback : function(e) {
 						}
 					});
@@ -1289,7 +1306,7 @@ function addWmsLayer(val, layerName){
 		return;
 	}
 
-	Module.SetProxy('./proxywms?');//프록시 설정
+	Module.SetProxy('/proxywms?');//프록시 설정
 
 	let slopeoption = {
 		url : '',
@@ -1298,11 +1315,12 @@ function addWmsLayer(val, layerName){
 		maximumlevel: 15,
 		crs:'EPSG:4326',
 		parameters:  {
-			key : 'B9ECCC18-DD44-3F46-A14B-EFFF588CF200', //api key
+			//#실습 브이월드 API 키 입력 필요
+			key : GLOBAL.VWORLD_API_KEY, //api key
 			request : 'GetMap',
 			styles : (layerName == 'lt_c_upisuq161'?layerName:layerName+'_3d'),
 			version : '1.3.0',                            //wms version
-			domain: 'localhost:8080',                     //api 신청 주소
+			domain: 'localhost',                     //api 신청 주소
 			format : 'image/png',
 			transparent:'true',
 			bbox:'-180,-90,0,90'
@@ -1332,7 +1350,8 @@ function addWfsLayer(val, layerName){
 			version : '1.1.0',
 			maxFeatures : 50,
 			output : 'application/json',
-			key : 'B9ECCC18-DD44-3F46-A14B-EFFF588CF200',
+			//#실습 브이월드 API KEY
+			key : GLOBAL.VWORLD_API_KEY,
 			DOMAIN : 'localhost:8080',
 			crs : 'EPSG:4326',
 			srsname : 'EPSG:4326',
@@ -1438,8 +1457,14 @@ function createWFSPoint(data, layer){
 function addShadowBuilding(val){
 	Module.XDSetMouseState(1);//지도 이동 모드
 	if(val){
-		Module.XDEMapCreateLayer("facility_build", "https://xdworld.vworld.kr", 0, true, true, false, 9, 0, 15)//vworld 건물 레이어 생성
-		Module.setVisibleRange("facility_build", 3.0, 100000.0);
+		var layer = Module.getTileLayerList().createXDServerLayer({
+			url : "https://xdworld.vworld.kr",
+			servername : "XDServer3d",
+			name : "facility_build",
+			type : 9,
+			minLevel : 0,
+			maxLevel : 15
+		});
 		Module.map.setSimpleMode(false);//심플모드
 
 		GLOBAL.Analysis.setAllObjectRenderShadow(true);//모든 객체의 그림자를 그리도록 설정
@@ -1707,8 +1732,14 @@ function createGrid_3D(_data){
 function addAnalysisBuilding(val){
 	Module.XDSetMouseState(1);//지도 이동 모드
 	if(val){
-		Module.XDEMapCreateLayer("facility_build", "https://xdworld.vworld.kr", 0, true, true, false, 9, 0, 15)//vworld 건물 레이어 생성
-		Module.setVisibleRange("facility_build", 3.0, 100000.0);
+		var layer = Module.getTileLayerList().createXDServerLayer({
+			url : "https://xdworld.vworld.kr",
+			servername : "XDServer3d",
+			name : "facility_build",
+			type : 9,
+			minLevel : 0,
+			maxLevel : 15
+		});
 		Module.map.setSimpleMode(false);
 
 	}else{
@@ -1739,7 +1770,9 @@ function getSlopePlane(angle){
 	
 	var color = new Module.createColor();	// 시곡면 분석 색상 지정
 	color.setARGB(180, 255, 0, 0);
-	GLOBAL.Analysis.createSlopePlane(angle, color);	// 시곡면 분석 퍼짐 각도, 색상 설정
+	// Set vertical angle, horizontal angle, color
+	GLOBAL.Analysis.createSlopePlane(30,70,angle, color);	// 시곡면 분석 퍼짐 각도, 색상 설정
+	
 	
 }
 

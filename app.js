@@ -21,13 +21,13 @@ app.get('/proxywms', function(req, res) {
 
     // var url = wmsUrl +"?" + qs.stringify(req.query);
     var url = wmsUrl +"?" + urlstr;
-    // console.log('/fileThumbnail going to url ' + url); 
+   // console.log('/fileThumbnail going to url ' + url); 
     request.get(url).pipe(res);
 });
 
 app.get('/proxywfs', function(req, res) {    
     var url = wfsUrl +"?" + qs.stringify(req.query);
-    //console.log('/fileThumbnail going to url' + url); 
+   // console.log('/fileThumbnail going to url' + url); 
     request.get(url).pipe(res);
 });
 
