@@ -211,7 +211,7 @@ function initXDMap(){
 			servername : "XDServer3d"
 		},
 	},
-	defaultKey : "ezbBD(h2eFCmDQFQd9QpdzDS#zJRdJDm4!Epe(a2EzcbEzb2"
+	defaultKey : "DFG~EpIREQDmdJe1E9QpdBca#FBSDJFmdzHoe(fB4!e1E(JS1I=="
   });
   Module.SetResourceServerAddr("/img/");
   //지도 사이즈 맞추기
@@ -453,6 +453,7 @@ function drawPoint(){
 		var layer = layerList.nameAtLayer("POI_Layer") ;
 		if(layerList.nameAtLayer("POI_Layer") ==  null){ //레이어가 생성되어 있는지 체크
 			layer = layerList.createLayer("POI_Layer", Module.ELT_3DPOINT);
+			layer.setMaxDistance(5000000);
 		}		 
 		
 		//POI 이미지 생성
@@ -492,8 +493,11 @@ function drawLine(){
 		}
 
 		var layerList = new Module.JSLayerList(true);
-		//LINE Object를 추가할 레이어 생성
-		var layer = layerList.createLayer("LINE_Layer", Module.ELT_3DLINE);
+		var layer = layerList.nameAtLayer("LINE_Layer") ;
+		if(layerList.nameAtLayer("LINE_Layer") ==  null){ //레이어가 생성되어 있는지 체크
+			layer = layerList.createLayer("LINE_Layer", Module.ELT_3DLINE);
+			layer.setMaxDistance(5000000);
+		}		 
 
 		let corArr= [];//라인 버텍스를 저장할 배열
 		for (var i=0; i<inputPoint.count(); i++) {
@@ -557,6 +561,8 @@ function drawPolygon(){
 		if(layer == null){
 			//레이어가 없는 경우 새로 생성
 			layer = layerList.createLayer("POLYGON_Layer", Module.ELT_POLYHEDRON);
+			//최대 가시범위 설정
+			layer.setMaxDistance(5000000);
 		}
 		
 		// 폴리곤 객체 생성
@@ -1352,7 +1358,7 @@ function addWfsLayer(val, layerName){
 			output : 'application/json',
 			//#실습 브이월드 API KEY
 			key : GLOBAL.VWORLD_API_KEY,
-			DOMAIN : 'localhost:8080',
+			DOMAIN : 'localhost',
 			crs : 'EPSG:4326',
 			srsname : 'EPSG:4326',
 			typename : layerName,
@@ -1853,12 +1859,5 @@ function setViewOption(val, id){
 			break;
 	}
 }
-
-
-
-
-
-
-
 
 

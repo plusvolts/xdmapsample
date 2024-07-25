@@ -122,6 +122,12 @@ ul.tabs li.active {
 .tabs_4 li:last-child{border-right:0}
 
 /* 주소검색 */
+.tabs_4_1{float: left; font-size: 13px;}
+.tabs_4_1 li{float: left; width: 110px; text-align: center; line-height: 35px; border-right: 1px solid #dcdcdc; border-bottom: 1px solid #dcdcdc; background: #efefef; cursor: pointer;}
+.tabs_4_1 li.active{background: #fff; border-bottom: 0;}
+.tabs_4_1 li:last-child{border-right:0}
+
+/* 주소검색 */
 .tabs_5{float: left; font-size: 13px;}
 .tabs_5 li{float: left; width: 167px; text-align: center; line-height: 35px; border-right: 1px solid #dcdcdc; border-bottom: 1px solid #dcdcdc; background: #efefef; cursor: pointer;}
 .tabs_5 li.active{background: #fff; border-bottom: 0;}
