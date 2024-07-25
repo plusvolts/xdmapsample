@@ -1397,7 +1397,7 @@ function createWFSPolygon(featuresArr, layer){
 		let f = featuresArr[k];
 		
 		let polygon = Module.createPolygon(f.id);//id로 polygon 객체 생성
-		let color = new Module.JSColor(170, 153, 153, 153);
+		let color = new Module.JSColor(170, 255, 53, 53);
 		let outline = new Module.JSColor(12, 153, 153, 153);
 
 		// 폴리곤 색상 설정
